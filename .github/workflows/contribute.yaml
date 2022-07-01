@@ -1,0 +1,29 @@
+name: Contribute
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  lint:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install SwiftLint
+        uses: norio-nomura/action-swiftlint@3.2.1
+      - name: Lint
+        run: swiftlint
+  build:
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        working-directory: "./Sample"
+        run: xcodebuild -scheme KVIndicatorView -destination generic/platform=iOS
+  test:
+    needs: build
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test
+        run: swift test

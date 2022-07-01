@@ -1,0 +1,40 @@
+name: Publish new version
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        run: xcodebuild -project "./Sample/Sample.xcodeproj" -scheme KVIndicatorView -destination generic/platform=iOS
+  docs:
+    runs-on: macos-12
+    needs: build
+    env:
+        DEVELOPER_DIR: /Applications/Xcode_13.4.1.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build docs
+        working-directory: "./Sample"
+        run: xcodebuild docbuild -scheme KVIndicatorView -destination generic/platform=iOS -derivedDataPath ~/Desktop/KVIndicatorViewBuild
+      - name: Find docc
+        run: |
+          doccPath=$(xcrun --find docc)
+          echo "DOCC_PATH=$doccPath" >> $GITHUB_ENV
+      - name: Convert docs to static website
+        run: |
+          echo "docc path <$DOCC_PATH>"
+          $DOCC_PATH process-archive transform-for-static-hosting ~/Desktop/KVIndicatorViewBuild/Build/Products/Debug-iphoneos/KVIndicatorView.doccarchive --output-path "docs" --hosting-base-path "KVIndicatorView.iOS"
+      - name: Commit doc
+        run: |
+          git config --global user.name 'Github Actions'
+          git config --global user.email 'kevin.sibue.pro@outlook.com'
+          git add docs/\*
+          git commit -am "New documentation version"
+          git push
