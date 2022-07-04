@@ -75,4 +75,4 @@ You can have more information when the technical [documentation](https://kelvas0
 
 ## Samples
 
-You can access to sample project on `KVIndicatorView/Sample`
+You can access to sample project on folder `Sample`
